@@ -133,7 +133,7 @@ impl ChatChannelsCatalog {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("ChatChannels");
     s.add_field(SchemaField::new("ChannelID", FieldType::UInt32));
     s.add_field(SchemaField::new("Flags", FieldType::UInt32));

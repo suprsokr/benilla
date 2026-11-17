@@ -25,7 +25,7 @@ pub struct LfgDungeon {
     pub side: i32,
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("LFGDungeons");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     for i in 0..8 {

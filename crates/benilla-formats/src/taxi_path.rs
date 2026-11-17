@@ -65,7 +65,7 @@ impl TaxiPaths {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("TaxiPath");
     for name in ["ID", "FromTaxiNode", "ToTaxiNode", "Cost"] {
         s.add_field(SchemaField::new(name, FieldType::UInt32));

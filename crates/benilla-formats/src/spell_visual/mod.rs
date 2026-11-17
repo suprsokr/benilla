@@ -20,7 +20,7 @@ const SPELL_VISUAL: &str = "DBFilesClient\\SpellVisual.dbc";
 const SPELL_VISUAL_KIT: &str = "DBFilesClient\\SpellVisualKit.dbc";
 const SPELL_VISUAL_EFFECT_NAME: &str = "DBFilesClient\\SpellVisualEffectName.dbc";
 
-const SPELL_VISUAL_FIELDS: usize = 16;
+pub(crate) const SPELL_VISUAL_FIELDS: usize = 16;
 const SPELL_VISUAL_KIT_FIELDS: usize = 35;
 
 /// Each emitter slot's M2 `AttachmentID`, kit fields 3-11 in order, as the client's slot loop
@@ -410,7 +410,7 @@ impl SpellVisualCatalog {
     }
 }
 
-fn n_u32_schema(name: &str, fields: usize) -> Schema {
+pub(crate) fn n_u32_schema(name: &str, fields: usize) -> Schema {
     let mut s = Schema::new(name);
     for i in 0..fields {
         s.add_field(SchemaField::new(format!("F{i}"), FieldType::UInt32));
@@ -419,7 +419,7 @@ fn n_u32_schema(name: &str, fields: usize) -> Schema {
 }
 
 /// `SpellVisualEffectName`: id, name, model path, and two columns the client never reads.
-fn effect_name_schema() -> Schema {
+pub(crate) fn effect_name_schema() -> Schema {
     let mut s = Schema::new("SpellVisualEffectName");
     for i in 0..5 {
         let ty = if i == 1 || i == 2 {
@@ -434,7 +434,7 @@ fn effect_name_schema() -> Schema {
 
 /// `SpellVisualKit`: fields 0-14 are ids, 15-18 the signed `CharProcType` keys and 19-34 the
 /// float params, which the dispatcher (`0x60d7c0`) loads with `fld`.
-fn kit_schema() -> Schema {
+pub(crate) fn kit_schema() -> Schema {
     let mut s = Schema::new("SpellVisualKit");
     for i in 0..SPELL_VISUAL_KIT_FIELDS {
         let ty = match i {

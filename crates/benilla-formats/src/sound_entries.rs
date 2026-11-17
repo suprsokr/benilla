@@ -103,6 +103,11 @@ impl SoundKitCatalog {
         self.kits.len()
     }
 
+    /// Every kit, in no order: the reverse lookup a tool needs to ask which kits name a file.
+    pub fn kits(&self) -> impl Iterator<Item = &SoundKit> {
+        self.kits.values()
+    }
+
     pub fn is_empty(&self) -> bool {
         self.kits.is_empty()
     }
@@ -185,7 +190,7 @@ fn resolve_forced_beds(rows: &[SoundKit]) -> (Option<u32>, Option<u32>) {
     (ghost, underwater)
 }
 
-fn sound_entries_schema() -> Schema {
+pub(crate) fn sound_entries_schema() -> Schema {
     let mut s = Schema::new("SoundEntries");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     s.add_field(SchemaField::new("SoundType", FieldType::UInt32));

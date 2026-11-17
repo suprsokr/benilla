@@ -173,7 +173,7 @@ impl PetFoodNames {
     }
 }
 
-fn family_schema() -> Schema {
+pub(crate) fn family_schema() -> Schema {
     let mut s = Schema::new("CreatureFamily");
     for i in 0..FAMILY_FIELDS {
         let ty = match i {
@@ -188,7 +188,7 @@ fn family_schema() -> Schema {
     s
 }
 
-fn food_schema() -> Schema {
+pub(crate) fn food_schema() -> Schema {
     let mut s = Schema::new("ItemPetFood");
     for i in 0..FOOD_FIELDS {
         let ty = if i == FOOD_NAME_FIELD {

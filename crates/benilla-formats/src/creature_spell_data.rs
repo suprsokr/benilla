@@ -44,7 +44,7 @@ impl CreatureSpellData {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("CreatureSpellData");
     for i in 0..FIELDS {
         s.add_field(SchemaField::new(format!("F{i}"), FieldType::UInt32));

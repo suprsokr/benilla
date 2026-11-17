@@ -135,7 +135,7 @@ impl ChrRaces {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("ChrRaces");
     for i in 0..CHR_RACES_FIELDS {
         let ty = if i == PREFIX_FIELD

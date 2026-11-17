@@ -46,7 +46,7 @@ fn is_patch_glob_match(name: &str) -> bool {
 /// (`0x4038b5`-`0x403912`, the table `0x82e12c`, `model` first) ends the process on the first base
 /// archive that does not open (`0x4038ef` → `0x64d0e0`, Error #134); `speech2.MPQ` and the patches
 /// are optional.
-fn mount_order(dir_names: &[String]) -> Result<Vec<String>> {
+pub fn mount_order(dir_names: &[String]) -> Result<Vec<String>> {
     let find = |want: &str| {
         dir_names
             .iter()
@@ -119,6 +119,18 @@ impl Chain {
     /// every localized DBC string.
     pub fn locale(&self) -> Locale {
         self.locale
+    }
+
+    /// A chain over archives the caller already opened, in ascending priority: the browser's wasm
+    /// build mounts each archive through [`benilla_mpq::Archive::from_source`] over range reads and
+    /// hands the same order here, so every loader below reads one chain shape.
+    pub fn from_archives(archives: Vec<Archive>) -> Self {
+        let mut chain = Self {
+            archives,
+            locale: Locale::default(),
+        };
+        chain.locale = crate::wow_ini::client_locale(&chain);
+        chain
     }
 
     /// The same archives read as another locale, for a test of the column a loader reads.

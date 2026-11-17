@@ -309,16 +309,9 @@ pub(crate) fn spawn_wmo_liquids<'a>(
     }
 }
 
-/// Each kind's frames, `XTextures\<dir>\<stem>.<1..=count>.blp`, as `(kind, dir, stem, count)`.
-const FRAME_SETS: &[(LiquidKind, &str, &str, u32)] = &[
-    (LiquidKind::Still, "river", "lake_a", 30),
-    (LiquidKind::Rapids, "river", "fast_a", 16),
-    (LiquidKind::Ocean, "ocean", "ocean_h", 30),
-    // Fullbright: the sheet is the opaque, unlit, fogged body (`0x6b68f0`). Magma comes from both
-    // the WMO pools and the ADT magma queue; the reference has no ADT queue for slime.
-    (LiquidKind::Magma, "lava", "lava", 30),
-    (LiquidKind::Slime, "slime", "slime", 30),
-];
+// Each kind's frame set comes from `LiquidKind::frames`; magma is fullbright (the sheet is the
+// opaque, unlit, fogged body, `0x6b68f0`) and reaches us from both WMO pools and the ADT magma
+// queue, while the reference has no ADT queue for slime.
 
 pub(super) fn setup_liquid(
     mut commands: Commands,
@@ -332,7 +325,8 @@ pub(super) fn setup_liquid(
     };
     // Light, fog and the water swatches come off the shared global-light buffer, as for terrain.
     let mut assets = LiquidAssets::default();
-    for &(kind, dir, stem, count) in FRAME_SETS {
+    for kind in LiquidKind::ALL {
+        let (dir, stem, count) = kind.frames();
         let Some((frames, frame_count)) =
             load_frame_array(&mut world_assets, &mut images, kind, dir, stem, count)
         else {
@@ -416,9 +410,9 @@ pub(super) fn setup_liquid(
     // Frame sets, not materials.
     info!(
         "liquid: loaded {} water frame set(s)",
-        FRAME_SETS
+        LiquidKind::ALL
             .iter()
-            .filter(|(k, ..)| assets.material(*k, LiquidPath::Adt, false).is_some())
+            .filter(|k| assets.material(**k, LiquidPath::Adt, false).is_some())
             .count()
     );
     commands.insert_resource(assets);
@@ -489,7 +483,7 @@ mod tests {
     /// Only the fullbright kinds have nibbles that scroll, so only they get a scroll lane.
     #[test]
     fn only_fullbright_kinds_can_take_a_scroll_lane() {
-        for &(kind, ..) in FRAME_SETS {
+        for kind in LiquidKind::ALL {
             let wants_lane = kind.is_fullbright();
             assert_eq!(
                 wants_lane,

@@ -49,7 +49,7 @@ impl NpcGreetingCatalog {
     }
 }
 
-fn npcsounds_schema() -> Schema {
+pub(crate) fn npcsounds_schema() -> Schema {
     let mut s = Schema::new("NPCSounds");
     for i in 0..5 {
         s.add_field(SchemaField::new(format!("f{i}"), FieldType::UInt32));
@@ -57,7 +57,7 @@ fn npcsounds_schema() -> Schema {
     s
 }
 
-fn cdi_schema() -> Schema {
+pub(crate) fn cdi_schema() -> Schema {
     let mut s = Schema::new("CreatureDisplayInfo");
     for i in 0..12 {
         s.add_field(SchemaField::new(format!("f{i}"), FieldType::UInt32));

@@ -439,7 +439,7 @@ impl SpellCatalog {
 
 /// 173 fields, `u32` but for `Speed`, the four float effect arrays and the four string blocks' first columns;
 /// the signed columns stay `u32`, as [`i32_at`] reads the same bits.
-fn spell_schema() -> Schema {
+pub(crate) fn spell_schema() -> Schema {
     let mut s = Schema::new("Spell");
     for i in 0..SPELL_FIELDS {
         if i == COL_NAME {

@@ -49,6 +49,50 @@ pub struct CreatureVoice {
     pub pet_dismiss: u32,
 }
 
+impl CreatureVoice {
+    /// Every `SoundEntries` kit the row holds, by the event the client plays it for, in column
+    /// order. `footstep_class` and `impact_type` name other tables, so they stay out.
+    pub fn kits(&self) -> Vec<(&'static str, u32)> {
+        let mut out = Vec::new();
+        let mut push = |event: &'static str, kit: u32| {
+            if kit != 0 {
+                out.push((event, kit));
+            }
+        };
+        push("attack", self.exertion[0]);
+        push("attack critical", self.exertion[1]);
+        push("wound", self.injury[0]);
+        push("wound critical", self.injury[1]);
+        push("wound crushing", self.injury[2]);
+        push("death", self.death);
+        push("stun", self.stun);
+        push("stand", self.stand);
+        push("aggro", self.aggro);
+        push("wing flap", self.wing_flap);
+        push("wing glide", self.wing_glide);
+        push("alert", self.alert);
+        for (i, kit) in self.fidget.iter().enumerate() {
+            push(
+                ["fidget 1", "fidget 2", "fidget 3", "fidget 4"][i],
+                *kit,
+            );
+        }
+        for (i, kit) in self.custom_attack.iter().enumerate() {
+            push(
+                ["custom attack 1", "custom attack 2", "custom attack 3", "custom attack 4"][i],
+                *kit,
+            );
+        }
+        push("loop", self.loop_sound);
+        push("jump start", self.jump_start);
+        push("jump end", self.jump_end);
+        push("pet attack", self.pet_attack);
+        push("pet order", self.pet_order);
+        push("pet dismiss", self.pet_dismiss);
+        out
+    }
+}
+
 /// Voice rows by display id through `CreatureDisplayInfo.SoundID`, and by model id through
 /// `CreatureModelData.SoundID` for the dismiss sound.
 pub struct CreatureVoiceCatalog {
@@ -61,6 +105,12 @@ impl CreatureVoiceCatalog {
     /// The voice set for a creature display id (`UNIT_FIELD_DISPLAYID`).
     pub fn for_display(&self, display_id: u32) -> Option<&CreatureVoice> {
         self.rows.get(self.display_to_sound.get(&display_id)?)
+    }
+
+    /// The `CreatureSoundData` row a display resolves to: the loader already applied the
+    /// `SoundID`-else-model fallback (`0x60b0a9`), so this is the row [`Self::for_display`] reads.
+    pub fn row_for_display(&self, display_id: u32) -> Option<u32> {
+        self.display_to_sound.get(&display_id).copied()
     }
 
     /// The voice set for a `CreatureModelData` id through its own `SoundID` (col 13), with no
@@ -87,7 +137,7 @@ pub(crate) fn csd_schema() -> Schema {
     s
 }
 
-fn cdi_schema() -> Schema {
+pub(crate) fn cdi_schema() -> Schema {
     let mut s = Schema::new("CreatureDisplayInfo");
     for i in 0..12 {
         s.add_field(SchemaField::new(format!("f{i}"), FieldType::UInt32));
@@ -95,7 +145,7 @@ fn cdi_schema() -> Schema {
     s
 }
 
-fn cmd_schema() -> Schema {
+pub(crate) fn cmd_schema() -> Schema {
     let mut s = Schema::new("CreatureModelData");
     for i in 0..16 {
         s.add_field(SchemaField::new(format!("f{i}"), FieldType::UInt32));

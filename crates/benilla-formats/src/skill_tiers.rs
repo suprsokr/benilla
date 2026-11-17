@@ -53,7 +53,7 @@ impl SkillTiers {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("SkillTiers");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     for i in 0..32 {

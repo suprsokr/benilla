@@ -59,7 +59,7 @@ impl CreatureTypeTable {
     }
 }
 
-fn creature_type_schema() -> Schema {
+pub(crate) fn creature_type_schema() -> Schema {
     let mut s = Schema::new("CreatureType");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     for i in 0..8 {

@@ -97,7 +97,7 @@ impl AreaTriggerCatalog {
 }
 
 /// The 10-column `AreaTrigger.dbc` schema.
-pub fn area_trigger_schema() -> Schema {
+pub(crate) fn area_trigger_schema() -> Schema {
     let mut s = Schema::new("AreaTrigger");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     s.add_field(SchemaField::new("MapID", FieldType::UInt32));

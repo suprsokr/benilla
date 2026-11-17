@@ -30,6 +30,12 @@ impl VisibleGeosets {
     pub fn contains(&self, geoset_id: &u16) -> bool {
         *geoset_id > 1700 || self.selected.contains(geoset_id)
     }
+
+    /// The selected ids, as the compositor built them; a caller filtering submeshes reads the same
+    /// `contains` test, since an id above 1700 stays visible whatever this holds.
+    pub fn ids(&self) -> &[u16] {
+        &self.selected
+    }
 }
 
 /// The customization → geoset tables, resolving an appearance to the set of visible geosets.

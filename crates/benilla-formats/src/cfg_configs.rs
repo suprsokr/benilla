@@ -45,7 +45,7 @@ impl RealmConfigs {
 
 /// `ID`, `RealmType`, `PlayerKillingAllowed`, `RoleplayingRealm`: the 4 columns × 0x10 bytes the
 /// loader (`0x5413f0`) gates on.
-fn cfg_configs_schema() -> Schema {
+pub(crate) fn cfg_configs_schema() -> Schema {
     let mut s = Schema::new("Cfg_Configs");
     for name in [
         "ID",

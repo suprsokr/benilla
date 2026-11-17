@@ -17,7 +17,7 @@ const FLAGS_FIELD: usize = 1;
 /// The rows `0x53f510` walks (`0x53f534`-`0x53f539`), one per `UNIT_FIELD_RESISTANCES` slot.
 const MAX_SCHOOLS: usize = 7;
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("Resistances");
     for i in 0..FIELDS {
         let ty = if (3..=10).contains(&i) {

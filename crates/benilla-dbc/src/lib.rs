@@ -309,6 +309,12 @@ impl RecordSet {
         &self.records
     }
 
+    /// The column names the schema expanded to, arrays written `Name[0]`, `Name[1]`, ... in the
+    /// same order as a record's values and the CSV's header.
+    pub fn field_names(&self) -> &[String] {
+        &self.field_names
+    }
+
     /// Resolve a [`StringRef`] to its NUL-terminated string in the block (UTF-8, lossy).
     pub fn get_string(&self, r: StringRef) -> Result<std::borrow::Cow<'_, str>> {
         let off = r.0 as usize;

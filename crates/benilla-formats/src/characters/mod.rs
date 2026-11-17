@@ -12,6 +12,7 @@ mod customization;
 mod geosets;
 mod sections;
 
+pub(crate) use customization::all_u32_schema;
 pub use customization::{CharCreateCatalog, ChrRaceRow, DialRanges, NameGenRow, StartOutfitItem};
 pub use geosets::{CharacterGeosets, EquipGeosets, VisibleGeosets};
 pub use sections::{

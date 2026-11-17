@@ -84,7 +84,7 @@ impl DurabilityTables {
     }
 }
 
-fn costs_schema() -> Schema {
+pub(crate) fn costs_schema() -> Schema {
     let mut s = Schema::new("DurabilityCosts");
     s.add_field(SchemaField::new("id", FieldType::UInt32));
     s.add_field(SchemaField::new_array("weapon", FieldType::UInt32, 21));
@@ -93,7 +93,7 @@ fn costs_schema() -> Schema {
     s
 }
 
-fn qualities_schema() -> Schema {
+pub(crate) fn qualities_schema() -> Schema {
     let mut s = Schema::new("DurabilityQuality");
     s.add_field(SchemaField::new("id", FieldType::UInt32));
     s.add_field(SchemaField::new("mult", FieldType::Float32));

@@ -12,7 +12,7 @@ use benilla_dbc::{DbcParser, FieldType, Schema, SchemaField};
 pub use benilla_blp::{full_mip_count, BlpTexels};
 
 mod chain;
-pub use chain::{Chain, ChainEntry};
+pub use chain::{mount_order, Chain, ChainEntry};
 /// Loose `.tga` art, as addon folders ship it.
 mod tga;
 pub use tga::{tga_texture_size, tga_to_rgba, TGA_GATE_PREFIX};
@@ -39,6 +39,7 @@ mod camera_shakes;
 mod cinematics;
 mod creatures;
 mod dbc;
+mod schema_registry;
 mod unit_blood;
 pub use camera_shakes::{load_camera_shakes, CameraShake, CameraShakeCatalog, SpellShakeGroup};
 pub use cinematics::{
@@ -645,6 +646,12 @@ pub fn blp_bytes_to_native_chain(bytes: &[u8]) -> Result<BlpMipChain> {
         texels,
         mips,
     })
+}
+
+/// Every DBC schema this crate can build, by module path (and builder, where a module builds
+/// several), each built by calling the loader's own builder.
+pub fn all_schemas() -> Vec<(&'static str, Schema)> {
+    schema_registry::all()
 }
 
 /// Our schema for a known 1.12 DBC by base filename, as DBC files carry no column types. A

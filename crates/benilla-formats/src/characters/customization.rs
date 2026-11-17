@@ -608,7 +608,7 @@ fn hair_colors_by_style(race: u8, sex: u8, avail: &HashSet<SectionKey>) -> Vec<u
 }
 
 /// `n` `UInt32` fields for a DBC read by index; the parser's field-count check guards the layout.
-fn all_u32_schema(name: &str, n: usize) -> Schema {
+pub(crate) fn all_u32_schema(name: &str, n: usize) -> Schema {
     let mut s = Schema::new(name);
     for i in 0..n {
         s.add_field(SchemaField::new(format!("f{i}"), FieldType::UInt32));

@@ -26,7 +26,7 @@ pub struct GmSurvey {
     pub texts: Vec<(u32, String)>,
 }
 
-fn schema(name: &str, strings: usize, ints: usize) -> Schema {
+pub(crate) fn schema(name: &str, strings: usize, ints: usize) -> Schema {
     let mut s = Schema::new(name);
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     for i in 0..ints {

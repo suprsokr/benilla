@@ -256,6 +256,30 @@ impl CreatureCatalog {
         self.display.iter().map(|(id, r)| (*id, r.model_id))
     }
 
+    /// The `Monster1/2/3` skins a model draws with, from the first display that names it: a
+    /// display's `textureVariation` names the files beside the model, which the client binds at
+    /// spawn. `None` when no display names the model: a doodad, a spell effect, or a character
+    /// model whose body comes from the composite instead.
+    pub fn skins_for_model(&self, model_path: &str) -> Option<[Option<String>; 3]> {
+        let want = crate::m2_file_name(model_path)?;
+        self.model_skins()
+            .find(|(path, _)| crate::m2_file_name(path).as_deref() == Some(want.as_str()))
+            .map(|(_, skins)| skins.clone())
+    }
+
+    /// Every displayed model with its `Monster1/2/3` skins, lowest display id first: a model under
+    /// several displays resolves to the same variation every run, where a hash map's order would
+    /// otherwise pick one at random. A caller building its own model lookup reads this.
+    pub fn model_skins(&self) -> impl Iterator<Item = (&str, &[Option<String>; 3])> + '_ {
+        let mut displays: Vec<u32> = self.display.keys().copied().collect();
+        displays.sort_unstable();
+        displays.into_iter().filter_map(move |id| {
+            let row = self.display.get(&id)?;
+            let model = self.models.get(&row.model_id)?;
+            Some((model.path.as_str(), &row.textures))
+        })
+    }
+
     /// `modelScale × creatureModelScale`. The server folds it into `OBJECT_FIELD_SCALE_X`, which
     /// alone scales a unit (`0x613ef0`), so only the glue screens read this: the reference sizes
     /// the serverless character-select pet by it (`0x472dc6`).
@@ -329,6 +353,12 @@ impl CreatureCatalog {
             blood_model: model.blood,
             collision_height: model.collision_height,
         })
+    }
+
+    /// The `ExtendedDisplayInfoID` a display names (field 3): 0 for a plain creature, which
+    /// composites no body and reads no `ItemDisplayInfo` rows.
+    pub fn extended_id(&self, display_id: u32) -> Option<u32> {
+        self.display.get(&display_id).map(|row| row.extended_id)
     }
 
     /// The `(race, sex)` of a display's `CreatureDisplayInfoExtra` row, the unit's display

@@ -5,6 +5,7 @@
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use benilla_dbc::FieldType;
 use benilla_formats::open_chain;
 use clap::{Parser, Subcommand};
 
@@ -28,7 +29,8 @@ mod thudcensus;
 )]
 struct Cli {
     /// A single `.MPQ` file, or a vanilla `Data` directory (opens the full patch chain).
-    path: PathBuf,
+    /// `schemas` reads no archive, so it needs no path.
+    path: Option<PathBuf>,
     #[command(subcommand)]
     command: Command,
 }
@@ -37,6 +39,8 @@ struct Cli {
 enum Command {
     /// List files across the chain, sorted by name.
     List,
+    /// Print every DBC schema this crate can build as JSON. Reads no archive: needs no path.
+    Schemas,
     /// Extract one file by its internal path, writing raw bytes to `output`.
     Extract {
         /// Internal path inside the archive (forward or back slashes accepted).
@@ -563,9 +567,73 @@ fn guild_emblem(v: Vec<i32>) -> Result<benilla_formats::GuildEmblem> {
     })
 }
 
+/// `schemas`: every DBC schema this crate builds, as one JSON document on stdout. A `tables`
+/// array, one object per table: `table`, `key_field` (null when unset) and `fields`, each field
+/// `{"name", "count", "type"}` with `type` exactly `UInt32`, `Int32`, `Float32` or `String`.
+fn print_schemas() {
+    let tables = benilla_formats::all_schemas();
+    let mut out = String::from("{\n  \"tables\": [");
+    for (i, (module, schema)) in tables.iter().enumerate() {
+        out.push_str(if i == 0 { "\n" } else { ",\n" });
+        out.push_str("    {\n      \"module\": ");
+        push_json_string(&mut out, module);
+        out.push_str(",\n      \"table\": ");
+        push_json_string(&mut out, &schema.name);
+        out.push_str(",\n      \"key_field\": ");
+        match &schema.key_field {
+            Some(key) => push_json_string(&mut out, key),
+            None => out.push_str("null"),
+        }
+        out.push_str(",\n      \"fields\": [");
+        for (j, field) in schema.fields.iter().enumerate() {
+            out.push_str(if j == 0 { "\n" } else { ",\n" });
+            out.push_str("        {\"name\": ");
+            push_json_string(&mut out, &field.name);
+            out.push_str(&format!(", \"count\": {}, \"type\": \"", field.count));
+            out.push_str(match field.ty {
+                FieldType::UInt32 => "UInt32",
+                FieldType::Int32 => "Int32",
+                FieldType::Float32 => "Float32",
+                FieldType::String => "String",
+            });
+            out.push_str("\"}");
+        }
+        out.push_str("\n      ]\n    }");
+    }
+    out.push_str("\n  ]\n}");
+    println!("{out}");
+}
+
+/// `s` as a JSON string literal, quotes included: escapes `"`, `\\` and the control characters.
+fn push_json_string(out: &mut String, s: &str) {
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{8}' => out.push_str("\\b"),
+            '\u{c}' => out.push_str("\\f"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let mut chain = open_chain(&cli.path)?;
+    // `schemas` describes this crate's own tables and reads no archive, so the chain never opens.
+    if matches!(cli.command, Command::Schemas) {
+        print_schemas();
+        return Ok(());
+    }
+    let path = cli.path.as_deref().context(
+        "this command reads the archives: pass a `.MPQ` file or a vanilla `Data` directory",
+    )?;
+    let mut chain = open_chain(path)?;
 
     match cli.command {
         Command::List => {
@@ -576,6 +644,8 @@ fn main() -> Result<()> {
             }
             eprintln!("{} files", files.len());
         }
+        // Handled above, before the chain opens.
+        Command::Schemas => unreachable!(),
         Command::Charatlas {
             race,
             sex,

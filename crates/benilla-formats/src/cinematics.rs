@@ -106,7 +106,7 @@ pub fn camera_model_path(model: &str) -> String {
     crate::models::model_path(model)
 }
 
-fn sequences_schema() -> Schema {
+pub(crate) fn sequences_schema() -> Schema {
     let mut s = Schema::new("CinematicSequences");
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     s.add_field(SchemaField::new("SoundID", FieldType::UInt32));
@@ -116,7 +116,7 @@ fn sequences_schema() -> Schema {
     s
 }
 
-fn cameras_schema() -> Schema {
+pub(crate) fn cameras_schema() -> Schema {
     let mut s = Schema::new("CinematicCamera");
     for (name, ty) in [
         ("ID", FieldType::UInt32),

@@ -21,7 +21,8 @@ use atmosphere::{
     LP_OCEAN_SHALLOW_ALPHA, LP_SKYBOX, LP_WATER_DEEP_ALPHA, LP_WATER_SHALLOW_ALPHA,
 };
 pub use atmosphere::{ZERO_KEY_COLOR, ZERO_KEY_SCALAR};
-use tables::{band_schema, load_bands, load_float_bands, sample_color, sample_float, Band, DAY};
+pub(crate) use tables::band_schema;
+use tables::{load_bands, load_float_bands, sample_color, sample_float, Band, DAY};
 
 const LIGHT: &str = "DBFilesClient\\Light.dbc";
 const INT_BAND: &str = "DBFilesClient\\LightIntBand.dbc";
@@ -176,7 +177,7 @@ pub struct LightCatalog {
     skyboxes: HashMap<u32, String>,
 }
 
-fn light_schema() -> Schema {
+pub(crate) fn light_schema() -> Schema {
     let mut s = Schema::new("Light");
     for (n, t) in [
         ("ID", FieldType::UInt32),
@@ -198,7 +199,7 @@ fn light_schema() -> Schema {
 /// `LightParams.dbc`: 9 fields, 36-byte records, read as nine untyped dwords (`0x589030`), so
 /// int versus float is the consumers'.
 /// `cloudTypeID` (+0x0C) is 0 in every 5875 record; the glow is +0x10.
-fn light_params_schema() -> Schema {
+pub(crate) fn light_params_schema() -> Schema {
     let mut s = Schema::new("LightParams");
     for (n, t) in [
         ("ID", FieldType::UInt32),

@@ -55,6 +55,28 @@ impl LiquidKind {
         }
     }
 
+    /// The animated texture set the client binds to this kind's surface, as
+    /// `(directory, stem, frames)`: the files are `XTextures\<dir>\<stem>.<1..=frames>.blp`.
+    /// A body of water is therefore up to 30 BLPs, not a tinted quad.
+    pub fn frames(self) -> (&'static str, &'static str, u32) {
+        match self {
+            Self::Still => ("river", "lake_a", 30),
+            Self::Rapids => ("river", "fast_a", 16),
+            Self::Ocean => ("ocean", "ocean_h", 30),
+            Self::Magma => ("lava", "lava", 30),
+            Self::Slime => ("slime", "slime", 30),
+        }
+    }
+
+    /// Every kind, in the order the client's name table lists them.
+    pub const ALL: [LiquidKind; 5] = [
+        LiquidKind::Still,
+        LiquidKind::Rapids,
+        LiquidKind::Ocean,
+        LiquidKind::Magma,
+        LiquidKind::Slime,
+    ];
+
     /// Whether this kind is opaque and unlit, its texture the body colour (magma, slime); water and
     /// ocean take the `ocean0_s.bls` depth-swatch path. Unlit is not unfogged (`0x593d18`).
     pub fn is_fullbright(self) -> bool {

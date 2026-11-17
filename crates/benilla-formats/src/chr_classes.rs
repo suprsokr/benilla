@@ -196,7 +196,7 @@ impl ChrClasses {
     }
 }
 
-fn schema() -> Schema {
+pub(crate) fn schema() -> Schema {
     let mut s = Schema::new("ChrClasses");
     for i in 0..CHR_CLASSES_FIELDS {
         // The token, the file string and the eight name columns are strings; the rest stay opaque dwords.

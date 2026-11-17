@@ -19,7 +19,7 @@ pub(super) struct Band<T> {
 }
 
 /// The shared band record: `ID, num, time[16], value[16]`, 34 fields, 136 bytes.
-pub(super) fn band_schema(name: &str, value: FieldType) -> Schema {
+pub(crate) fn band_schema(name: &str, value: FieldType) -> Schema {
     let mut s = Schema::new(name);
     s.add_field(SchemaField::new("ID", FieldType::UInt32));
     s.add_field(SchemaField::new("num", FieldType::UInt32));
