@@ -1,0 +1,7 @@
+## Interface: 11200
+## Title: L4D Northshire
+## Notes: Left 4 Dead style health, wounding, bleed-out and director HUD for the Northshire game mode.
+## Notes-ja: Northshire の L4D モード用 HUD。
+## Version: 0.1.0
+## Author: LyraCore fork
+L4D.lua

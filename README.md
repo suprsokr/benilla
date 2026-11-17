@@ -46,6 +46,12 @@ renderer runs with no game attached. [`docs/MAP.md`](docs/MAP.md) maps every cra
 and [`docs/DEVIATIONS.md`](docs/DEVIATIONS.md) lists everywhere benilla differs from 1.12.1; both are
 generated from the code.
 
+## This fork
+
+Adds a Left 4 Dead style Northshire mode on the LyraCore fork: an over-the-shoulder camera, FPS
+left-click fire, and a health/bleed/director HUD. `docs` in the server fork hold the rules; the
+HUD addon mirror is in `extras/addons/L4D`. Press `L` to return the reference camera.
+
 ## Status
 
 Fully playable on a 1.12.1 server that doesn't enforce Warden or need client changes beyond its

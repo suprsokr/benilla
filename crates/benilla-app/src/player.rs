@@ -44,6 +44,8 @@ pub(crate) use world_focus::{publish_caster_outdoors, BarUnitOutdoors, PlayerOut
 // The remembered camera pose, inside `player/` to read the rig's `pub(super)` fields.
 mod camera_saved;
 mod camera_water;
+// L4D over-the-shoulder aim and its FPS fire input.
+mod l4d_camera;
 // The five named camera views, inside `player/` to write the rig's `pub(super)` fields.
 pub(crate) mod camera_view;
 pub(crate) mod drunk;
@@ -371,6 +373,15 @@ impl Plugin for PlayerPlugin {
         app.init_resource::<camera_zoom::ZoomLimit>();
         app.init_resource::<camera::FollowConfig>();
         app.init_resource::<OwnControlLost>();
+        app.init_resource::<l4d_camera::L4dAim>();
+        app.add_systems(
+            Update,
+            (l4d_camera::update_aim, l4d_camera::fire)
+                .chain()
+                .in_set(WorldStage::Input)
+                .before(control)
+                .in_set(crate::client_state::InWorldGated),
+        );
         app.init_resource::<MoverLock>();
         app.init_resource::<StandPending>();
         app.init_resource::<press::CallAutorun>();

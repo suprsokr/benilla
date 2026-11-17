@@ -67,6 +67,14 @@ impl PressGesture {
 
 /// Radians of camera rotation per raw mouse unit at the default move speeds and `mousespeed` 1.0.
 const LOOK_SENSITIVITY: f32 = 0.003;
+
+/// L4D aim: the eye sits this far behind the pivot. At 2.35 yd the avatar stays visible at the
+/// left of the frame, which is the difference between third person and a shoulder camera.
+pub(super) const L4D_AIM_DISTANCE: f32 = 2.35;
+/// How far the eye moves to the character's right in full aim, yd.
+pub(super) const L4D_SHOULDER_OFFSET: f32 = 0.82;
+/// A small rise so the crosshair clears the character's own head.
+pub(super) const L4D_SHOULDER_RISE: f32 = 0.08;
 /// `mousespeed`'s slider, MOUSE_SENSITIVITY (0.5 to 1.5 by 0.05, `UIOptionsFrame.lua:87`).
 pub(crate) const MOUSE_SPEED_RANGE: std::ops::RangeInclusive<f32> = 0.5..=1.5;
 
@@ -701,6 +709,9 @@ pub(crate) struct CameraControl {
     /// The self-avatar's alpha from the camera-to-pivot distance, 1 in third person to 0 in first
     /// (`self_model_fade_alpha`); applied by [`apply_self_model_fade`].
     pub(super) self_fade_alpha: f32,
+    /// 0 in the normal third-person rig, 1 in the L4D over-the-shoulder aim. The blend is driven
+    /// by [`super::l4d_camera`]; zero leaves the rig bit-identical to the reference.
+    pub(super) aim: f32,
     /// The own-model flag `[0xc4d74c]` clear: the camera's fade writes it each update as whether
     /// its alpha byte is nonzero (`0x482c41`), and `showplayer` toggles it (`0x5ec8c0`). Nothing
     /// here reads it: the fade itself hides the body ([`apply_self_model_fade`]).
@@ -1731,8 +1742,11 @@ pub(super) fn seat_camera(
     let cam_fwd = arm_rotation * Vec3::NEG_Z;
     let pivot = player_pos + Vec3::Y * cam_pivot_height;
     // Under a scope the eye takes distance 0 whatever the zoom holds (`0x50edb7`-`0x50edc0`).
+    let aim = rig.aim.clamp(0.0, 1.0);
     let orbit = if dynamics.subject.scoped {
         0.0
+    } else if aim > 0.0 {
+        rig.distance * (1.0 - aim) + L4D_AIM_DISTANCE * aim
     } else {
         rig.distance
     };
@@ -1758,7 +1772,13 @@ pub(super) fn seat_camera(
         rig.collision_distance + (open - rig.collision_distance) * t
     };
     let frac = (rig.collision_distance / boom_len).clamp(0.0, 1.0);
-    let seated = head + boom * frac;
+    let mut seated = head + boom * frac;
+    if aim > 0.0 {
+        // Over-the-shoulder: shift the eye to the character's right, the shot going over it.
+        let right = rotation * Vec3::X;
+        seated += right * (L4D_SHOULDER_OFFSET * aim);
+        seated.y += L4D_SHOULDER_RISE * aim;
+    }
     // The head bob is a world-space translation of the eye, added last into the slot
     // [`crate::camera_shake`] writes, as the reference folds the bob into the shake's accumulator
     // (`0x50eb0f`) and applies the pair once (`0x50de00`). Zero when nothing bobs.
