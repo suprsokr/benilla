@@ -1,6 +1,6 @@
 -- L4D Northshire: a compact health / bleed / director HUD driven by the server's bridge.
 -- The server sends CHAT_MSG_ADDON lines with prefix STC and a v1 envelope:
---   v1|l4d.state|0|1/1|hp|max|wounded|downed|down_ms|knockdowns|intensity|phase|wave|profile|alive|smoked|blinded
+--   v1|l4d.state|0|1/1|hp|max|wounded|downed|down_ms|knockdowns|intensity|phase|wave|profile|alive|smoked|blinded|bots_alive|bots_total
 --   v1|l4d.hit|0|1/1|damage|profile|crit|extras|splash
 --   v1|l4d.wave|0|1/1|count|front|left|right|behind
 --   v1|l4d.knockdown|0|1/1|count|length_ms
@@ -53,7 +53,7 @@ killText:SetText("")
 killText:Hide()
 
 local panel = CreateFrame("Frame", nil, frame)
-panel:SetWidth(250)
+panel:SetWidth(340)
 panel:SetHeight(54)
 panel:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 158)
 
@@ -120,6 +120,8 @@ local state = {
   wave = 0,
   profile = "fists",
   alive = 0,
+  bots_alive = 0,
+  bots_total = 0,
   smoked = false,
   blinded = false,
   hit_flash = 0,
@@ -188,14 +190,16 @@ local function update_health()
   stateText:SetText(label)
 
   local phase_names = { "calm", "building", "peak", "HORDE" }
-  infoText:SetText(string.format(
-    "%s   threat %d%% (%s)   wave %d   infected %d",
+  local fields = {
     state.profile,
-    state.intensity,
-    phase_names[state.phase + 1] or "calm",
-    state.wave,
-    state.alive
-  ))
+    string.format("threat %d%% (%s)", state.intensity, phase_names[state.phase + 1] or "calm"),
+    string.format("wave %d", state.wave),
+    string.format("infected %d", state.alive),
+  }
+  if state.bots_total > 0 then
+    fields[#fields + 1] = string.format("bots %d/%d", state.bots_alive, state.bots_total)
+  end
+  infoText:SetText(table.concat(fields, "  "))
   directorBar:SetValue(state.intensity)
   if state.phase >= 3 then
     directorBar:SetStatusBarColor(1, 0.1, 0.1)
@@ -219,6 +223,8 @@ local function apply_state(payload)
   state.alive = num(f[11])
   state.smoked = num(f[12]) == 1
   state.blinded = num(f[13]) == 1
+  state.bots_alive = num(f[14])
+  state.bots_total = num(f[15])
   if state.smoked then
     warningText:SetText("SMOKER  -  MOVE")
     warning:Show()
@@ -322,6 +328,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
     end
   elseif event == "PLAYER_DEAD" then
     state.downed = false
+    state.bots_alive = 0
+    state.bots_total = 0
     vignette:SetAlpha(0.7)
     vignette:SetVertexColor(0.3, 0.3, 0.3)
   elseif event == "PLAYER_ALIVE" then
